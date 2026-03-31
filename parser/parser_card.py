@@ -6,16 +6,16 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
-
 class ParserCard:
-
     URL: str = "https://yandex.ru/maps/193/voronezh/search/"
     VERSION_CHROME: int = 146
 
-    def __init__(self, category: str, location: str):
+    def __init__(self, category: str, location: str, quantity: int):
+        self.quantity = quantity
         self.location = location
         self.category = category
         self.driver = None
@@ -34,13 +34,13 @@ class ParserCard:
     def __create_full_url(self):
         return f"{self.URL}{self.category} {self.location}"
 
-    def _parse_block_page(self, quantity):
+    def _parse_block_page(self):
         """Получаем блоки элементов"""
         preview_count = elements_new = count = 0
         logger.info(f"[INFO] --Парсим блоки выдачи в яндекс картах--")
         logger.info(f"[INFO] --Категория: {self.category} город: {self.location}--")
 
-        while True if not quantity else count <= quantity:
+        while True if not self.quantity else count <= self.quantity:
             elements_new = self.driver.find_elements(By.CSS_SELECTOR, ".search-snippet-view")
             """Прокрутка вниз !! строка не терпит форматирования линтерами"""
             self.driver.execute_script("arguments[0].scrollIntoView(true);", elements_new[-1])
@@ -104,8 +104,8 @@ class ParserCard:
         self._setup_selenium()
         self._create_web_driver()
         time.sleep(5)
-        print(self._parse_block_page(10))
+        print(self._parse_block_page())
 
 
 if __name__ == "__main__":
-    print(ParserCard("Бассейны", "Воронеж").run())
+    print(ParserCard("Бассейны", "Воронеж", ).run())

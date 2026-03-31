@@ -9,6 +9,7 @@ def hello():
 
 
 @router.post('/run/')
-def run_parser(category: str, city: str):
-    search = ParserCard(category, city)
+def run_parser(category: str, city: str, quantity:int):
+    search = ParserCard(category, city, quantity)
     search.run()
+    return 'wait'
