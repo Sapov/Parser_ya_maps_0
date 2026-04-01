@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from base import Base
+from .base import Base
 
 class Organisations(Base):
     __tablename__ = "organisations"  # Fixed typo in table name

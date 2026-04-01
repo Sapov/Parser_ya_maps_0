@@ -6,6 +6,7 @@ from parser.models.city import City
 from parser.models.category import Category
 from sqlalchemy.orm import Session
 import logging
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 class DB:
     def __init__(self):
         self.engine = create_engine(
-            "sqlite:////home/sasha/PycharmProjects/ParingYaMaps/parsers/core/db.sqlite3",
-            echo=False,
+            "sqlite:////home/sasha/PycharmProjects/Parser_ya_maps/core/db.sqlite3",
+            echo=settings.db_echo,
         )
         self.Session = sessionmaker(bind=self.engine, expire_on_commit=False)
         Base.metadata.create_all(self.engine)
@@ -22,39 +23,67 @@ class DB:
     def add_items_link(self, items_link: dict) -> None:
         session = self.Session()
         try:
+            # Получаем или создаем категорию
             category_name = items_link.get("category")
-            category = (
-                session.query(Category).filter_by(name_category=category_name).first()
-            )
+            category = session.query(Category).filter_by(category=category_name).first()
             if not category:
-                category = Category(name_category=category_name)
-            session.add(category)
+                category = Category(category=category_name)
+                session.add(category)
+                session.flush()  # Получаем ID новой категории
+                logger.info(f"Создана новая категория: {category_name}")
+            else:
+                logger.info(f"Категория уже существует: {category_name}")
 
+            # Получаем или создаем город
             city_name = items_link.get("city")
             city = session.query(City).filter_by(city=city_name).first()
             if not city:
                 city = City(city=city_name)
                 session.add(city)
+                session.flush()  # Получаем ID нового города
+                logger.info(f"Создан новый город: {city_name}")
+            else:
+                logger.info(f"Город уже существует: {city_name}")
 
-            item = Organisations(
-                link=items_link.get("link"),
-                title=items_link.get("title"),
-                rating_yandex=items_link.get("rating_yandex"),
-                estimation=items_link.get("estimation"),
-                category=category,
-                city=city,
-            )
-            session.add(item)
+            # Проверяем существование организации
+            existing_org = session.query(Organisations).filter_by(
+                link=items_link.get("link")
+            ).first()
+
+            if existing_org:
+                # Обновляем существующую запись
+                existing_org.title = items_link.get("title")
+                existing_org.rating_yandex = items_link.get("rating_yandex")
+                existing_org.estimation = items_link.get("estimation")
+                existing_org.category = category
+                existing_org.city = city
+                logger.info(f"Обновлена организация с ID: {existing_org.id}")
+            else:
+                # Создаем новую запись
+                item = Organisations(
+                    link=items_link.get("link"),
+                    title=items_link.get("title"),
+                    rating_yandex=items_link.get("rating_yandex"),
+                    estimation=items_link.get("estimation"),
+                    category=category,
+                    city=city,
+                )
+                session.add(item)
+                logger.info(f"Добавлена новая организация")
+                # Сохраняем item, чтобы получить его ID после коммита
+                session.flush()
+                logger.info(f"Добавлен элемент с ID: {item.id}")
+
+            # ОДИН commit для всех изменений
             session.commit()
-            # Печатаем ДО коммита или используем expire_on_commit=False
-            logger.info(f"Добавлен элемент с ID: {item.id}")
+            logger.info("Транзакция успешно завершена")
+
         except Exception as e:
             session.rollback()
-            print(f"Ошибка: {e}")
+            logger.error(f"Ошибка при добавлении/обновлении: {e}")
             raise  # Переподнимаем исключение для диагностики
         finally:
             session.close()
-
     def get_all_links(self) -> list[Organisations]:
         """Получить все записи из таблицы"""
         session = self.Session()
@@ -85,7 +114,7 @@ class DB:
             session.close()
 
     def get_links_paginated(
-        self, page: int = 1, per_page: int = 10
+            self, page: int = 1, per_page: int = 10
     ) -> list[Organisations]:
         """Постраничное чтение"""
         session = self.Session()
@@ -96,7 +125,7 @@ class DB:
             session.close()
 
     def get_links_paginated_up(
-        self, page: int = 1, per_page: int = 10
+            self, page: int = 1, per_page: int = 10
     ) -> list[Organisations]:
         """Постраничное чтение"""
         session = self.Session()
@@ -191,4 +220,6 @@ class DB:
 # Проверка работы
 if __name__ == "__main__":
     db = DB()
-    print(db.get_all_sites())
+    itm = {'link': 'https://yandex.ru/maps/org/prints/1659610427/', 'title': 'Принц', 'rating_yandex': '4,9',
+           'estimation': None, 'city': 'Воронеж', 'category': 'Бассейны'}
+    db.add_items_link(itm)

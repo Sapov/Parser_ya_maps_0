@@ -20,44 +20,44 @@ class ParserCard:
         self.category = category
         self.driver = None
 
-    def _setup_selenium(self):
+    def __setup_selenium(self):
         options = Options()
         options.add_argument("--headless=new")
         return options
 
-    def _create_web_driver(self):
-        self.driver = uc.Chrome(
-            version_main=self.VERSION_CHROME, options=self._setup_selenium()
-        )
-        self.driver.get(self.__create_full_url())
-
     def __create_full_url(self):
         return f"{self.URL}{self.category} {self.location}"
 
-    def _parse_block_page(self):
+    def __create_web_driver(self):
+        self.driver = uc.Chrome(
+            version_main=self.VERSION_CHROME, options=self.__setup_selenium()
+        )
+        self.driver.get(self.__create_full_url())
+
+    def __parse_block_page(self):
         """Получаем блоки элементов"""
-        preview_count = elements_new = count = 0
+        preview_count = elements = count = 0
         logger.info(f"[INFO] --Парсим блоки выдачи в яндекс картах--")
         logger.info(f"[INFO] --Категория: {self.category} город: {self.location}--")
 
         while True if not self.quantity else count <= self.quantity:
-            elements_new = self.driver.find_elements(By.CSS_SELECTOR, ".search-snippet-view")
+            elements = self.driver.find_elements(By.CSS_SELECTOR, ".search-snippet-view")
             """Прокрутка вниз !! строка не терпит форматирования линтерами"""
-            self.driver.execute_script("arguments[0].scrollIntoView(true);", elements_new[-1])
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", elements[-1])
             # self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", elements_new[-1])
 
             time.sleep(random.randint(1, 7))
-            elements_new = self.driver.find_elements(
+            elements = self.driver.find_elements(
                 By.CSS_SELECTOR, ".search-snippet-view"
             )
-            count = len(elements_new)
+            count = len(elements)
             logger.info(f"Найдено элементов: {count}")
             if preview_count == count:
                 break
             preview_count = count
-            self.parser_card(elements_new)
+            self.__parser_card(elements)
 
-    def parser_card(self, elements):
+    def __parser_card(self, elements):
         print(f"""[INFO] Получаем ссылку, название, рейтинг, и количество оценок""")
         for i in elements:
             try:
@@ -98,14 +98,18 @@ class ParserCard:
                 "category": self.category,
             }
             print(item)
+            from core.db import DB
+            db = DB()
+            db.add_items_link(item)
+
 
     def run(self):
 
-        self._setup_selenium()
-        self._create_web_driver()
+        self.__setup_selenium()
+        self.__create_web_driver()
         time.sleep(5)
-        print(self._parse_block_page())
+        print(self.__parse_block_page())
 
 
 if __name__ == "__main__":
-    print(ParserCard("Бассейны", "Воронеж", ).run())
+    print(ParserCard("Бассейны", "Воронеж", 10).run())
