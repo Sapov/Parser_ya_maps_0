@@ -6,7 +6,7 @@ celery_app = Celery(
     "worker",
     broker=settings.celery_broker_url,
     backend=settings.celery_result_backend,
-    include=["app.tasks"]  # Список модулей с задачами
+    include=["core.tasks"]  # Список модулей с задачами
 )
 
 # Настройка Celery
