@@ -67,7 +67,6 @@ class ParserCard:
                 link = i.find_element(
                     By.CSS_SELECTOR, ".search-snippet-view .link-overlay"
                 ).get_attribute("href")
-                print(link)
             except Exception as e:
                 logging.info(f"Нет селектора:  ССЫЛКА error: {e}")
                 link = None
