@@ -206,9 +206,7 @@ class ParserCard:
         return random.uniform(self.config.scroll_delay_min, self.config.scroll_delay_max)
 
     def run(self):
-
         self.setup_driver()
-        # time.sleep(5)
         self.parse()
 
 

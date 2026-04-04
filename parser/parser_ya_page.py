@@ -1,6 +1,5 @@
 import asyncio
 import json
-import math
 import time
 import random
 
@@ -116,7 +115,7 @@ class ParserPage(ParserCard):
 
 
     def save_data(self, new_list: list):
-        with open(f"mail.json", "w", encoding="utf-8") as file:
+        with open(f"{self.category}{self.location}mail.json", "w", encoding="utf-8") as file:
             json.dump(new_list, file, ensure_ascii=False, indent=4)
 
     def run(self) -> None:

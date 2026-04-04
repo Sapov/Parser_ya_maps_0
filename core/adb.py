@@ -2,6 +2,7 @@ import logging
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import select
 
+from core import settings
 from parser.models.organisations import Organisations
 
 logger = logging.getLogger(__name__)
@@ -10,10 +11,7 @@ logger = logging.getLogger(__name__)
 class AsyncDB:
     def __init__(self):
         # Для SQLite используем асинхронный драйвер
-        self.engine = create_async_engine(
-            "sqlite+aiosqlite:////home/sasha/PycharmProjects/Parser_ya_maps/core/db.sqlite3",
-            echo=True
-        )
+        self.engine = create_async_engine(settings.async_bd_url, echo=settings.db_echo)
         self.async_session = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
 
     async def insert_data(self, item: dict):
