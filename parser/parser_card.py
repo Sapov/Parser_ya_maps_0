@@ -74,7 +74,7 @@ class ParserCard:
     def __create_full_url(self):
         return f"{self.config.url}{self.category} {self.location}"
 
-    def __parse_block_page(self):
+    def parse(self):
         self.driver.get(self.__create_full_url())
         time.sleep(4)
 
@@ -200,11 +200,18 @@ class ParserCard:
 
         return item
 
+
+    def _get_random_delay(self) -> float:
+        """Получение случайной задержки"""
+        return random.uniform(self.config.scroll_delay_min, self.config.scroll_delay_max)
+
     def run(self):
 
         self.setup_driver()
         # time.sleep(5)
-        self.__parse_block_page()
+        self.parse()
+
+
 
 
 if __name__ == "__main__":

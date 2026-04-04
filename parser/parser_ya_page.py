@@ -110,7 +110,6 @@ class ParserPage(ParserCard):
                 logging.warning(f"Сcылка не открылась")
 
             logger.info(f"NOMBER {index} {items} \n ")
-            print(f"*" * 50 , f'открываю страницу {val["link"]}')
             # Обновляем базу
             self.db.update_record(items)
 
