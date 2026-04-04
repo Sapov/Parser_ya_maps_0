@@ -26,8 +26,6 @@ class DB:
         async_engine = create_async_engine(settings.async_bd_url)
         self.async_session = async_sessionmaker(bind=async_engine, expire_on_commit=False)
 
-
-
     async def insert_data(self, item: dict):
         async with self.async_session() as session:
             result = await session.execute(
@@ -44,7 +42,6 @@ class DB:
                 await session.commit()
             else:
                 logger.warning(f"Организация с ID {item.get('id')} не найдена")
-
 
     def add_items_link(self, items_link: dict) -> None:
         session = self.Session()
@@ -136,7 +133,24 @@ class DB:
             ).order_by(Organisations.rating_yandex.desc())
 
             result = session.execute(stmt)
-            return list(result.scalars().all())
+
+            lst = []
+            for i in list(result.scalars()):
+                lst.append(
+                    {
+                        "id": i.id,
+                        "link": i.link,
+                        "title": i.title,
+                        "rating_yandex": i.rating_yandex,
+                        "estimation": i.estimation,
+                        "phone": i.phone,
+                        "address": i.address,
+                        "site": i.site,
+                    }
+                )
+            return lst
+
+
         finally:
             session.close()
 
@@ -307,6 +321,6 @@ class DB:
 # Проверка работы
 if __name__ == "__main__":
     db = DB()
-    l= db.get_by_category_and_city(category_name='Агентство недвижимости', city_name='Воронеж')
+    l = db.get_by_category_and_city(category_name='Агентство недвижимости', city_name='Воронеж')
     print(len(l))
     print(l)
