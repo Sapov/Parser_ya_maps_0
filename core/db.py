@@ -19,10 +19,9 @@ class DB:
             echo=settings.db_echo,
         )
         self.Session = sessionmaker(bind=self.engine, expire_on_commit=False)
-        # Base.metadata.drop_all(self.engine)
         Base.metadata.create_all(self.engine)
 
-        async_engine = create_async_engine("sqlite+aiosqlite:////home/sasha/PycharmProjects/Parser_ya_maps/core/db.sqlite3")
+        async_engine = create_async_engine(settings.async_bd_url)
         self.async_session = async_sessionmaker(bind=async_engine, expire_on_commit=False)
 
 
