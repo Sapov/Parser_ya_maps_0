@@ -1,97 +1,156 @@
 import time
 import asyncio
-from typing import Dict, Any
+from typing import Dict, Any, List
 from celery import shared_task
-
-from .celery_app import celery_app
+from celery_app import celery_app
 import logging
-
 
 logger = logging.getLogger(__name__)
 
 
-# Базовый пример простой задачи
-@celery_app.task(name="tasks.search")
-def search_itm(category: str, city: str, quantity: int) -> list:
-    lst = run()
-    save_data(lst)
-    return lst
+@celery_app.task(name="tasks.example_hello", bind=True)
+def example_hello(self, name: str) -> Dict[str, Any]:
+    """
+    Простая задача-пример
+    """
+    logger.info(f"Задача {self.request.id} запущена для {name}")
+    time.sleep(2)  # Имитация работы
+    return {"message": f"Hello {name}!", "task_id": self.request.id}
 
 
-    return lst
+@celery_app.task(name="tasks.add_numbers", bind=True)
+def add_numbers(self, x: int, y: int) -> Dict[str, Any]:
+    """
+    Задача сложения чисел
+    """
+    logger.info(f"Сложение {x} + {y}")
+    time.sleep(1)
+    result = x + y
+    return {
+        "x": x,
+        "y": y,
+        "result": result,
+        "task_id": self.request.id
+    }
 
-#
-# # Задача с прогрессом
-# @celery_app.task(name="tasks.process_data", bind=True)
-# def process_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-#     """Задача с отслеживанием прогресса"""
-#     total_steps = len(data.get("items", []))
-#
-#     for i, item in enumerate(data.get("items", [])):
-#         # Имитация обработки
-#         time.sleep(1)
-#         # Обновляем прогресс (доступно через Flower или API)
-#         self.update_state(
-#             state="PROGRESS",
-#             meta={
-#                 "current": i + 1,
-#                 "total": total_steps,
-#                 "status": f"Обработано {i + 1} из {total_steps} элементов"
-#             }
-#         )
-#
-#     return {"status": "completed", "processed": total_steps}
-#
-#
-# # Асинхронная задача (для асинхронных операций)
-# @celery_app.task(name="tasks.async_operation")
-# def async_operation(data: Dict[str, Any]) -> Dict[str, Any]:
-#     """Задача с асинхронными операциями"""
-#     # Для асинхронных операций используем asyncio.run()
-#     # Или делаем синхронную обертку
-#     loop = asyncio.new_event_loop()
-#     asyncio.set_event_loop(loop)
-#     try:
-#         result = loop.run_until_complete(_async_work(data))
-#     finally:
-#         loop.close()
-#     return result
-#
-#
-# async def _async_work(data: Dict[str, Any]) -> Dict[str, Any]:
-#     """Асинхронная работа"""
-#     await asyncio.sleep(3)
-#     return {"result": "async work done", "data": data}
-#
-#
-# # Задача для работы с базой данных
-# @celery_app.task(name="tasks.save_to_db", bind=True)
-# def save_to_db(self, items: list) -> Dict[str, Any]:
-#     """Сохранение данных в базу"""
-#     from app.db import SessionLocal
-#     from app.models import Item
-#
-#     session = SessionLocal()
-#     try:
-#         saved_count = 0
-#         for item_data in items:
-#             # Проверка существования
-#             existing = session.query(Item).filter_by(link=item_data["link"]).first()
-#             if not existing:
-#                 item = Item(**item_data)
-#                 session.add(item)
-#                 saved_count += 1
-#
-#             # Обновляем прогресс
-#             self.update_state(
-#                 state="PROGRESS",
-#                 meta={"saved": saved_count, "total": len(items)}
-#             )
-#
-#         session.commit()
-#         return {"saved": saved_count, "total": len(items)}
-#     except Exception as e:
-#         session.rollback()
-#         raise e
-#     finally:
-#         session.close()
+
+@celery_app.task(name="tasks.process_data", bind=True)
+def process_data(self, data: List[Dict]) -> Dict[str, Any]:
+    """
+    Обработка данных с прогрессом
+    """
+    total = len(data)
+    processed = 0
+
+    for i, item in enumerate(data):
+        # Имитация обработки
+        time.sleep(0.5)
+        processed = i + 1
+
+        # Обновляем прогресс
+        self.update_state(
+            state="PROGRESS",
+            meta={
+                "current": processed,
+                "total": total,
+                "percent": (processed / total) * 100,
+                "status": f"Обработано {processed} из {total}"
+            }
+        )
+
+    return {
+        "total": total,
+        "processed": processed,
+        "status": "completed"
+    }
+
+
+@celery_app.task(name="tasks.long_running_task", bind=True)
+def long_running_task(self, task_data: Dict) -> Dict:
+    """
+    Длительная задача
+    """
+    logger.info(f"Запущена длительная задача {self.request.id}")
+
+    for i in range(10):
+        time.sleep(1)
+        self.update_state(
+            state="PROGRESS",
+            meta={"progress": i + 1, "total": 10}
+        )
+
+    return {
+        "task_id": self.request.id,
+        "result": "completed",
+        "data": task_data
+    }
+
+
+# Пример асинхронной задачи
+@celery_app.task(name="tasks.async_example", bind=True)
+def async_example(self, url: str) -> Dict:
+    """
+    Асинхронная задача с aiohttp
+    """
+    import aiohttp
+    import asyncio
+
+    async def fetch():
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                return await response.text()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(fetch())
+        return {"url": url, "status": "success", "length": len(result)}
+    finally:
+        loop.close()
+
+
+# Задача для парсинга (ваш случай)
+@celery_app.task(name="tasks.parse_category", bind=True)
+def parse_category(self, category: str, location: str, quantity: int = None) -> Dict:
+    """
+    Задача парсинга категории
+    """
+    from parser.parser_card import ParserCard
+
+    logger.info(f"Начинаем парсинг {category} в {location}")
+
+    try:
+        parser = ParserCard(category, location, quantity)
+        parser.setup_driver()
+
+        # Обновляем прогресс
+        self.update_state(
+            state="PROGRESS",
+            meta={"status": "Парсинг начат", "progress": 0}
+        )
+
+        result = parser.parse()
+
+        # Обновляем прогресс
+        self.update_state(
+            state="PROGRESS",
+            meta={"status": "Парсинг завершен", "progress": 100}
+        )
+
+        return {
+            "category": category,
+            "location": location,
+            "status": "success",
+            "processed": len(result) if result else 0
+        }
+
+    except Exception as e:
+        logger.error(f"Ошибка парсинга: {e}")
+        return {
+            "category": category,
+            "location": location,
+            "status": "failed",
+            "error": str(e)
+        }
+    finally:
+        parser.close()
