@@ -10,13 +10,12 @@ logger = logging.getLogger(__name__)
 @celery_app.task(name="tasks.parse", bind=True)
 def parse(self, category: str, city: str, quantity: int) -> Dict[str, Any]:
     """
-    Простая задача-пример
+    Запуск парсера по ya картам
     """
-    print('TASK', category, city, quantity)
     run_parser(category, city, quantity)
 
     logger.info(f"Парсинг {category} запущен для города {city}")
-    return {"message": f"Парсинг {category} запущен для города {city} {self.task.id}"}
+    return {"message": f"Парсинг {category} запущен для города {city} {self.request.id}"}
 
 
 

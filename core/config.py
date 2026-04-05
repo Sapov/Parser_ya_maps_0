@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     db_url: str = "sqlite:////home/sasha/PycharmProjects/Parser_ya_maps/core/db.sqlite3"
     async_bd_url: str = "sqlite+aiosqlite:////home/sasha/PycharmProjects/Parser_ya_maps/core/db.sqlite3"
     db_echo: bool = False
-    app_name: str = "FastAPI with Celery"
+    app_name: str = "Parser Yandex Map"
 
     # Celery
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
