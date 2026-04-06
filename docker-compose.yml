@@ -31,7 +31,6 @@ services:
       - ./app:/app
     depends_on:
       - redis
-      - app
     command: 'celery -A celery_app worker --loglevel=info --concurrency=1'
 
     environment:
@@ -39,16 +38,16 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
-  flower:
-    container_name: flower
-    build: .
-    ports:
-      - 5555:5555
-    volumes:
-      - /:/app
-    depends_on:
-      - redis
-    command: 'celery -A celery_app flower'
+#  flower:
+#    container_name: flower
+#    build: .
+#    ports:
+#      - 5555:5555
+#    volumes:
+#      - /:/app
+#    depends_on:
+#      - redis
+#    command: 'celery -A celery_app flower'
 
 volumes:
   redis_data:
