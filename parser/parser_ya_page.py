@@ -28,7 +28,7 @@ class PageParserConfig:
     max_retries: int = 3
     retry_delay: int = 2
     page_load_timeout: int = 10
-    save_to_json: bool = True
+    save_to_json: bool = False
 
 
 class PageParser:
