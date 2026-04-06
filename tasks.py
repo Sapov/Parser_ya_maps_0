@@ -100,7 +100,7 @@ def parse_category(self, category: str, location: str, quantity: int = None) -> 
     """
     Задача парсинга категории
     """
-    from parser.parser_card import ParserCard
+    from parser.old_parser_card import ParserCard
 
     logger.info(f"Начинаем парсинг {category} в {location}")
 

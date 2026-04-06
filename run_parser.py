@@ -1,6 +1,6 @@
 import logging
 
-from parser.new_parser_card import ParserCard, runing_parser
+from parser.parser_card import runing_parser
 
 
 def run_parser(category: str, city: str, quantity:int):

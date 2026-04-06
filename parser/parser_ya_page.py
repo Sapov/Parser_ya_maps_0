@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 
 from core.db import DB
-from parser.parser_card import ParserCard, ParserConfig
+from parser.old_parser_card import ParserCard, ParserConfig
 from selenium.webdriver.common.by import By
 import logging
 
