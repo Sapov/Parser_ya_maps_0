@@ -158,7 +158,7 @@ def run_parser(category: str, city: str, quantity: int):
 def parse_all_city(category: str):
     for town in CITY:
         try:
-            run_parser(category, town, 5)
+            run_parser(category, town, 1000)
         except Exception as e:
             print(f'Error {e}')
 
