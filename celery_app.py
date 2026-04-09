@@ -17,8 +17,8 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
     task_track_started=True,
-    task_time_limit=3600 * 48,  # 2 часа
-    task_soft_time_limit=3600 * 48 - 60,  # 2 часа - 60 сек
+    task_time_limit=3600 * 480,  # 20 дней
+    task_soft_time_limit=3600 * 480 - 60,  # 2 часа - 60 сек
     worker_prefetch_multiplier=1,
     result_expires=86400,  # Результаты хранятся 24 часа
     task_acks_late=True,  # Подтверждение после выполнения
