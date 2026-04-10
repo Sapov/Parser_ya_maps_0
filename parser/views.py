@@ -40,6 +40,7 @@ async def passing_all_city(category: str):
     }
 
 
+
 @router.get('/city')
 async def get_city():
     '''
